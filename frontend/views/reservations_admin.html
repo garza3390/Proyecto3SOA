@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Calendario Semanal</title>
+<style>
+  /* Estilos para el calendario */
+  .calendar {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+
+  .day {
+    width: calc(100% / 8);
+    border: 1px solid #ccc;
+    padding: 10px;
+  }
+
+  .hour {
+    margin-bottom: 5px;
+    padding: 5px;
+    cursor: pointer;
+  }
+
+  .available {
+    background-color: #8BC34A; /* Verde para horas disponibles */
+  }
+
+  .booked {
+    background-color: #FF5722; /* Rojo para horas ocupadas */
+  }
+
+  a {
+    text-decoration: none;
+    color: #007bff;
+  }
+
+  .header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;      
+    }
+
+    .header h1 {
+      margin: 0;
+    }
+
+    .header button {
+      padding: 10px 20px;
+      background-color: #90abc7;
+      color: #fff;
+      border: none;
+      border-radius: 100%;
+      cursor: pointer;
+      font-size: 16px;
+      width: 500px;
+    }
+
+    .header button:hover {
+      background-color: #0056b3;
+    }
+</style>
+</head>
+<body>
+  <div class="header">
+    <button onclick="cerrarSesion()">Cerrar sesión</button>
+  </div>
+<br>
+<h1>Reservaciones de la semana</h1>
+
+<div class="calendar">
+  <!-- Loop para los días de la semana -->
+  <div class="day" id="domingo">
+    <h2>Domingo</h2>
+    <!-- Loop para las horas del día -->
+  </div>
+  <div class="day" id="lunes">
+    <h2>Lunes</h2>
+    <!-- Loop para las horas del día -->
+  </div>
+  <div class="day" id="martes">
+    <h2>Martes</h2>
+    <!-- Loop para las horas del día -->
+  </div>
+  <div class="day" id="miercoles">
+    <h2>Miercoles</h2>
+    <!-- Loop para las horas del día -->
+  </div>
+  <div class="day" id="jueves">
+    <h2>Jueves</h2>
+    <!-- Loop para las horas del día -->
+  </div>
+  <div class="day" id="viernes">
+    <h2>Viernes</h2>
+    <!-- Loop para las horas del día -->
+  </div>
+  <div class="day" id="sabado">
+    <h2>Sabado</h2>
+    <!-- Loop para las horas del día -->
+  </div>
+</div>
+
+<script>
+  // Función para obtener el nombre de usuario del Local Storage
+  function getLoggedInUserName() {
+      return localStorage.getItem('username');
+    }
+    
+// Realizar una solicitud GET al servidor para obtener los datos del horario
+fetch('https://us-central1-proyecto-3-soa.cloudfunctions.net/backend/horario')
+  .then(response => response.json())
+  .then(data => renderCalendar(data))
+  .catch(error => console.error('Error al obtener los datos:', error));
+
+// Función para renderizar los datos en el calendario
+function renderCalendar(scheduleData) {
+  // Array de los días de la semana
+  const daysOfWeek = ['domingo', 'lunes', 'martes', 'miercoles', 'jueves', 'viernes', 'sabado'];
+
+  // Loop a través de cada día de la semana
+  daysOfWeek.forEach(day => {
+    const dayElement = document.getElementById(day);
+    const hours = Object.keys(scheduleData[day]);
+
+    // Loop a través de cada hora del día
+    hours.forEach(hour => {
+      const hourData = scheduleData[day][hour];
+      const hourElement = document.createElement('div');
+      hourElement.classList.add('hour');
+      hourElement.textContent = `${hour}`;
+      
+      // Asignar clase según disponibilidad
+      if (hourData.estado === 'disponible') {
+        hourElement.classList.add('available');
+        // Agregar evento clic para manejar la interactividad opcional
+        hourElement.addEventListener('click', () => handleHourClick(day, hour));
+      } else {
+        hourElement.classList.add('booked');
+      }
+
+      // Agregar la hora al día correspondiente en el calendario
+      dayElement.appendChild(hourElement);
+    });
+  });
+}
+
+// Función para manejar el clic en una hora disponible
+function handleHourClick(day, hour) {
+  alert(`¡Has hecho clic en la hora ${hour} del día ${day}!`);
+}
+
+
+    function cerrarSesion() {
+      localStorage.removeItem("username");
+      window.location.href = "/frontend/";
+    }
+
+    
+
+</script>
+
+</body>
+</html>

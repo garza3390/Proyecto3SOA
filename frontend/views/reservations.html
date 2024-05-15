@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Reservaciones</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f5f5f5;
+      margin: 0;
+      padding: 0;
+    }
+    h1, h2 {
+      text-align: center;
+    }
+    form {
+      max-width: 400px;
+      margin: 20px auto;
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+    label {
+      display: block;
+      margin-bottom: 10px;
+    }
+    select, input[type="number"] {
+      width: 100%;
+      padding: 10px;
+      margin-bottom: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+    button:hover {
+      background-color: #0056b3;
+    }
+    a {
+      display: block;
+      margin-top: 20px;
+      text-align: center;
+      color: #007bff;
+      text-decoration: none;
+      font-size: 16px;
+    }
+    a:hover {
+      text-decoration: underline;
+    }
+    
+    .user_name {
+      text-align: center;
+    }
+
+    .header {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      margin-bottom: 20px;      
+    }
+
+    .header h1 {
+      margin: 0;
+    }
+
+    .header button {
+      padding: 10px 20px;
+      background-color: #90abc7;
+      color: #fff;
+      border: none;
+      border-radius: 100%;
+      cursor: pointer;
+      font-size: 16px;
+      width: 500px;
+    }
+
+    .header button:hover {
+      background-color: #0056b3;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 20px;
+      background-color: #fff;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <button onclick="cerrarSesion()">Cerrar sesión</button>
+  </div>
+  <br>
+  <div class="container">
+    
+  
+    <div class="user_name" id="user-info"></div>
+  
+    <h2>Reservación - Seleccione día y hora para verificar que esté disponible</h2>
+    <form id="reservacion-form">
+      <label for="dia">Día:</label>
+      <select id="dia" name="dia"></select>
+      <label for="hora">Hora:</label>
+      <select id="hora" name="hora"></select>
+      <label for="cantidad-personas">Cantidad de personas:</label>
+      <input id="cantidad-personas" type="number" name="cantidad-personas" min="1" placeholder="Número de personas" required>
+      <button type="submit">Consultar Disponibilidad</button>
+      <button id="reservar-button" type="button" onclick="reservar()" disabled>Reservar</button>
+    </form>
+  
+    <a href="/frontend/feedback">Feedback</a>
+    <a href="/frontend/">Volver al inicio</a>
+  
+    <h2>Mis Reservas</h2>
+    <div id="reservas-container"></div>
+  
+  </div>
+
+
+  <script>
+    // Función para obtener el nombre de usuario del Local Storage
+function getLoggedInUserName() {
+  return localStorage.getItem('username');
+}
+
+function agregarOpcionesDia(dias) {
+  const selectDia = document.getElementById('dia');
+  selectDia.innerHTML = ""; // Limpiar opciones actuales
+  dias.forEach(dia => {
+    const option = new Option(dia, dia);
+    selectDia.add(option);
+  });
+}
+
+function agregarOpcionesHora(horarios) {
+  const selectHora = document.getElementById('hora');
+  selectHora.innerHTML = ""; // Limpiar opciones actuales
+  Object.entries(horarios).forEach(([hora, detalle]) => {
+    const option = new Option(hora, hora);
+    selectHora.add(option);
+        });
+}
+
+function obtenerHorariosDisponibles() {
+  const apiUrl = 'https://us-central1-proyecto-3-soa.cloudfunctions.net/backend/horario';
+  const username = getLoggedInUserName();
+
+  fetch(apiUrl)
+    .then(response => response.json())
+    .then(data => {
+      
+      const reservasContainer = document.getElementById('reservas-container');
+      reservasContainer.innerHTML = '';
+
+      const dias = Object.keys(data);
+      agregarOpcionesDia(dias);
+      const primerDia = dias[0];
+      agregarOpcionesHora(data[primerDia]);
+
+      // Mostrar las reservas del usuario
+      Object.entries(data).forEach(([dia, horarios]) => {
+        Object.entries(horarios).forEach(([hora, detalle]) => {
+          if (detalle.dueno === username) {
+            const reservaDiv = document.createElement('div');
+            reservaDiv.innerHTML = `
+              <p>Día: ${dia}</p>
+              <p>Hora: ${hora}</p>
+              <p>Cantidad de personas: ${detalle.cantidad_personas}</p>
+              <button onclick="cancelarReserva('${dia}', '${hora}')">Cancelar</button>
+              <button onclick="mostrarFormularioCambio('${dia}', '${hora}')">Cambiar</button>
+            `;
+            reservasContainer.appendChild(reservaDiv);
+          }
+        });
+      });
+    })
+    .catch(error => console.error('Error:', error));
+}
+
+
+
+
+// Función para reservar
+function reservar() {
+  const dia       = document.getElementById('dia').value;
+  const hora = document.getElementById('hora').value;
+  const cantidadPersonas = document.getElementById('cantidad-personas').value;
+  const username = getLoggedInUserName();
+  if (!username) {
+    alert('Por favor, inicie sesión primero.');
+    return;
+  }
+
+  const reserva = {
+    dia: dia,
+    hora: hora,
+    cantidad_personas: cantidadPersonas,
+    dueno: username
+  };
+
+}
+
+
+// Función para cancelar una reserva
+function cancelarReserva(dia, hora) {
+  console.log("Cancelar reserva");
+}
+
+// Función para mostrar el formulario de cambio de reserva
+function mostrarFormularioCambio(dia, hora) {
+  const formularioCambio = document.createElement('form');
+  formularioCambio.innerHTML = `
+    <h3>Cambiar reserva</h3>
+    <label for="nueva-cantidad-personas">Nueva cantidad de personas:</label>
+    <input id="nueva-cantidad-personas" type="number" name="nueva-cantidad-personas" min="1" placeholder="Nueva cantidad de personas" required>
+    <button type="submit">Guardar Cambios</button>
+  `;
+
+  formularioCambio.addEventListener('submit', (event) => {
+    event.preventDefault();
+    const nuevaCantidadPersonas = document.getElementById('nueva-cantidad-personas').value;
+    const username = getLoggedInUserName();
+    if (!username) {
+      alert('Por favor, inicie sesión primero.');
+      return;
+    }
+
+    const reservasContainer = document.getElementById('reservas-container');
+    reservasContainer.innerHTML = '';
+    reservasContainer.appendChild(formularioCambio);
+  });
+}
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  obtenerHorariosDisponibles();
+
+  document.getElementById('reservacion-form').addEventListener('submit', (event) => {
+    event.preventDefault();
+    const dia = document.getElementById('dia').value;
+    const hora = document.getElementById('hora').value;
+    const apiUrl = 'https://us-central1-proyecto-3-soa.cloudfunctions.net/backend/horario';
+    fetch(apiUrl)
+      .then(response => response.json())
+      .then(data => {
+        const horarios = data[dia];
+        const detalleHora = horarios[hora];
+        const mensaje = detalleHora.estado === 'disponible' ? 'El día y la hora seleccionados están disponibles.' : 'El día y la hora seleccionados están ocupados.';
+        alert(mensaje);
+        if (detalleHora.estado === 'disponible') {
+          document.getElementById('reservar-button').disabled = false;
+        } else {
+          document.getElementById('reservar-button').disabled = true;
+        }
+      })
+      .catch(error => console.error('Error:', error));
+  });
+});
+
+
+// Función para mostrar el nombre de usuario en la página
+function displayUserName() {
+  const userInfoContainer = document.getElementById("user-info");
+  const loginLink = document.getElementById("login-link");
+  const username = getLoggedInUserName();
+  userInfoContainer.textContent = "Usuario: " + username;
+}
+
+function cerrarSesion() {
+  localStorage.removeItem("username");
+  window.location.href = "/frontend/";
+}
+
+// Función que se ejecuta cuando la ventana se carga
+window.onload = function () {
+  displayUserName();
+};
+
+
+  </script>
+</body>
+</html>
+
