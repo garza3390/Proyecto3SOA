@@ -5,69 +5,45 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Reservaciones</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
-      margin: 0;
-      padding: 0;
+    .calendar {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
     }
-    h1, h2 {
-      text-align: center;
-    }
-    form {
-      max-width: 400px;
-      margin: 20px auto;
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-    }
-    label {
-      display: block;
-      margin-bottom: 10px;
-    }
-    select, input[type="number"] {
-      width: 100%;
-      padding: 10px;
-      margin-bottom: 10px;
+
+    .day {
+      width: calc(100% / 7); 
       border: 1px solid #ccc;
-      border-radius: 4px;
-      font-size: 16px;
-    }
-    button {
-      width: 100%;
       padding: 10px;
-      background-color: #007bff;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
       cursor: pointer;
-      font-size: 16px;
     }
-    button:hover {
-      background-color: #0056b3;
+
+    .hour {
+      margin-bottom: 5px;
+      padding: 5px;
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
     }
+
+    .available {
+      background-color: #8BC34A; /* Verde para horas disponibles */
+    }
+
+    .booked {
+      background-color: #FF5722; /* Rojo para horas ocupadas */
+    }
+
     a {
-      display: block;
-      margin-top: 20px;
-      text-align: center;
-      color: #007bff;
       text-decoration: none;
-      font-size: 16px;
-    }
-    a:hover {
-      text-decoration: underline;
-    }
-    
-    .user_name {
-      text-align: center;
+      color: #007bff;
     }
 
     .header {
       display: flex;
-      justify-content: center;
+      justify-content: space-between;
       align-items: center;
-      margin-bottom: 20px;      
+      margin-bottom: 20px;
     }
 
     .header h1 {
@@ -79,218 +55,366 @@
       background-color: #90abc7;
       color: #fff;
       border: none;
-      border-radius: 100%;
+      border-radius: 5px;
       cursor: pointer;
       font-size: 16px;
-      width: 500px;
     }
 
     .header button:hover {
       background-color: #0056b3;
     }
 
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      padding: 20px;
-      background-color: #fff;
-      border-radius: 8px;
-      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    .select-container {
+      display: flex;
+      justify-content: center;
+      margin-bottom: 20px;
+    }
+
+    .select-container select {
+      padding: 10px;
+      margin: 0 10px;
+      font-size: 16px;
+    }
+
+    .form-container {
+      margin-bottom: 20px;
+      display: flex;
+      justify-content: center;
+    }
+
+    .form-container form {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    .form-container input, .form-container select {
+      margin-bottom: 10px;
+      padding: 5px;
+      font-size: 16px;
+    }
+
+    .form-container button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: #fff;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    .form-container button:hover {
+      background-color: #45a049;
+      color: #fff;
+    }
+
+    .user_name {
+      text-align: center;
+    }
+
+    .buscarButton {
+      background-color: #45a049;
+      color: #fff;
+    }
+    a {
+      text-decoration: none;
+      color: #007bff;
     }
   </style>
 </head>
 <body>
+
+  <a href="/frontend/feedback">Feedback</a>
   <div class="header">
+    <h1>Reservaciones de la semana</h1>
     <button onclick="cerrarSesion()">Cerrar sesión</button>
   </div>
-  <br>
-  <div class="container">
-    
   
-    <div class="user_name" id="user-info"></div>
-  
-    <h2>Reservación - Seleccione día y hora para verificar que esté disponible</h2>
-    <form id="reservacion-form">
-      <label for="dia">Día:</label>
-      <select id="dia" name="dia"></select>
-      <label for="hora">Hora:</label>
-      <select id="hora" name="hora"></select>
-      <label for="cantidad-personas">Cantidad de personas:</label>
-      <input id="cantidad-personas" type="number" name="cantidad-personas" min="1" placeholder="Número de personas" required>
-      <button type="submit">Consultar Disponibilidad</button>
-      <button id="reservar-button" type="button" onclick="reservar()" disabled>Reservar</button>
+  <div class="form-container">
+    <form id="booking-form">
+      <label>Hacer una reservación</label>
+      <div class="user_name" id="user-info"></div>
+      <input type="email" id="email" placeholder="Correo electrónico" required>
+      <input type="text" id="user" placeholder="Usuario" required>
+      <input type="number" id="persons" placeholder="Número de personas" required min="1">
+      <input type="date" id="date" required>
+      <input type="time" id="time" required>
+      <button type="submit">Agregar Reserva</button>
     </form>
-  
-    <a href="/frontend/feedback">Feedback</a>
-    <a href="/frontend/">Volver al inicio</a>
-  
-    <h2>Mis Reservas</h2>
-    <div id="reservas-container"></div>
-  
   </div>
 
+  <div class="select-container">
+    <select id="month-select">
+      <option value="enero">Enero</option>
+      <option value="febrero">Febrero</option>
+      <option value="marzo">Marzo</option>
+      <option value="abril">Abril</option>
+      <option value="mayo">Mayo</option>
+      <option value="junio">Junio</option>
+      <option value="julio">Julio</option>
+      <option value="agosto">Agosto</option>
+      <option value="septiembre">Septiembre</option>
+      <option value="octubre">Octubre</option>
+      <option value="noviembre">Noviembre</option>
+      <option value="diciembre">Diciembre</option>
+    </select>
+
+    <select id="year-select">
+        <option value="2024">2024</option>
+    </select>
+
+    <button class="buscarButton" onclick="loadCalendar()">Buscar horarios</button>
+  </div>
+
+  <div class="calendar" id="calendar">
+    <!-- Calendario dinámico -->
+  </div>
+
+  
+
+  <div class="booking-details" id="booking-details" style="display:none;">
+    <h2>Detalles de las Reservas</h2>
+    <div id="details"></div>
+  </div>
 
   <script>
-    // Función para obtener el nombre de usuario del Local Storage
-function getLoggedInUserName() {
-  return localStorage.getItem('username');
-}
+    const monthNames = ["enero", "febrero", "marzo", "abril", "mayo", "junio", "julio", "agosto", "septiembre", "octubre", "noviembre", "diciembre"];
 
-function agregarOpcionesDia(dias) {
-  const selectDia = document.getElementById('dia');
-  selectDia.innerHTML = ""; // Limpiar opciones actuales
-  dias.forEach(dia => {
-    const option = new Option(dia, dia);
-    selectDia.add(option);
-  });
-}
-
-function agregarOpcionesHora(horarios) {
-  const selectHora = document.getElementById('hora');
-  selectHora.innerHTML = ""; // Limpiar opciones actuales
-  Object.entries(horarios).forEach(([hora, detalle]) => {
-    const option = new Option(hora, hora);
-    selectHora.add(option);
-        });
-}
-
-function obtenerHorariosDisponibles() {
-  const apiUrl = 'https://us-central1-proyecto-3-soa.cloudfunctions.net/backend/horario';
-  const username = getLoggedInUserName();
-
-  fetch(apiUrl)
-    .then(response => response.json())
-    .then(data => {
-      
-      const reservasContainer = document.getElementById('reservas-container');
-      reservasContainer.innerHTML = '';
-
-      const dias = Object.keys(data);
-      agregarOpcionesDia(dias);
-      const primerDia = dias[0];
-      agregarOpcionesHora(data[primerDia]);
-
-      // Mostrar las reservas del usuario
-      Object.entries(data).forEach(([dia, horarios]) => {
-        Object.entries(horarios).forEach(([hora, detalle]) => {
-          if (detalle.dueno === username) {
-            const reservaDiv = document.createElement('div');
-            reservaDiv.innerHTML = `
-              <p>Día: ${dia}</p>
-              <p>Hora: ${hora}</p>
-              <p>Cantidad de personas: ${detalle.cantidad_personas}</p>
-              <button onclick="cancelarReserva('${dia}', '${hora}')">Cancelar</button>
-              <button onclick="mostrarFormularioCambio('${dia}', '${hora}')">Cambiar</button>
-            `;
-            reservasContainer.appendChild(reservaDiv);
-          }
-        });
-      });
-    })
-    .catch(error => console.error('Error:', error));
-}
-
-
-
-
-// Función para reservar
-function reservar() {
-  const dia       = document.getElementById('dia').value;
-  const hora = document.getElementById('hora').value;
-  const cantidadPersonas = document.getElementById('cantidad-personas').value;
-  const username = getLoggedInUserName();
-  if (!username) {
-    alert('Por favor, inicie sesión primero.');
-    return;
-  }
-
-  const reserva = {
-    dia: dia,
-    hora: hora,
-    cantidad_personas: cantidadPersonas,
-    dueno: username
-  };
-
-}
-
-
-// Función para cancelar una reserva
-function cancelarReserva(dia, hora) {
-  console.log("Cancelar reserva");
-}
-
-// Función para mostrar el formulario de cambio de reserva
-function mostrarFormularioCambio(dia, hora) {
-  const formularioCambio = document.createElement('form');
-  formularioCambio.innerHTML = `
-    <h3>Cambiar reserva</h3>
-    <label for="nueva-cantidad-personas">Nueva cantidad de personas:</label>
-    <input id="nueva-cantidad-personas" type="number" name="nueva-cantidad-personas" min="1" placeholder="Nueva cantidad de personas" required>
-    <button type="submit">Guardar Cambios</button>
-  `;
-
-  formularioCambio.addEventListener('submit', (event) => {
-    event.preventDefault();
-    const nuevaCantidadPersonas = document.getElementById('nueva-cantidad-personas').value;
-    const username = getLoggedInUserName();
-    if (!username) {
-      alert('Por favor, inicie sesión primero.');
-      return;
+    function getLoggedInUserName() {
+      return localStorage.getItem('username');
     }
 
-    const reservasContainer = document.getElementById('reservas-container');
-    reservasContainer.innerHTML = '';
-    reservasContainer.appendChild(formularioCambio);
-  });
-}
+    // Función para cerrar sesión
+    function cerrarSesion() {
+      localStorage.removeItem("username");
+      window.location.href = "/frontend/";
+    }
 
-
-document.addEventListener('DOMContentLoaded', () => {
-  obtenerHorariosDisponibles();
-
-  document.getElementById('reservacion-form').addEventListener('submit', (event) => {
-    event.preventDefault();
-    const dia = document.getElementById('dia').value;
-    const hora = document.getElementById('hora').value;
-    const apiUrl = 'https://us-central1-proyecto-3-soa.cloudfunctions.net/backend/horario';
-    fetch(apiUrl)
-      .then(response => response.json())
-      .then(data => {
-        const horarios = data[dia];
-        const detalleHora = horarios[hora];
-        const mensaje = detalleHora.estado === 'disponible' ? 'El día y la hora seleccionados están disponibles.' : 'El día y la hora seleccionados están ocupados.';
-        alert(mensaje);
-        if (detalleHora.estado === 'disponible') {
-          document.getElementById('reservar-button').disabled = false;
-        } else {
-          document.getElementById('reservar-button').disabled = true;
+    // Función para enviar solicitudes al backend
+    async function sendRequest(url, data) {
+      try {
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(data)
+        });
+        if (!response.ok) {
+          throw new Error('Error en la solicitud: ' + response.statusText);
         }
-      })
-      .catch(error => console.error('Error:', error));
-  });
-});
+        return await response.json();
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error en la solicitud: ' + error.message);
+      }
+    }
 
+    function displayUserName() {
+      const userInfoContainer = document.getElementById('user-info');
+      const username = getLoggedInUserName();
+      if (username) {
+        userInfoContainer.textContent = username;
+      } else {
+        userInfoContainer.textContent = '';
+      }
+    }
 
-// Función para mostrar el nombre de usuario en la página
-function displayUserName() {
-  const userInfoContainer = document.getElementById("user-info");
-  const loginLink = document.getElementById("login-link");
-  const username = getLoggedInUserName();
-  userInfoContainer.textContent = "Usuario: " + username;
+    function setDefaultEmail() {
+      const emailInput = document.getElementById('email');
+      const storedEmail = localStorage.getItem('email');
+      if (storedEmail) {
+        emailInput.value = storedEmail;
+      }
+    }
+
+    window.onload = function() {
+      displayUserName();
+      setDefaultEmail();
+    };
+
+    async function loadCalendar() {
+  const monthSelect = document.getElementById('month-select').value;
+  const yearSelect = document.getElementById('year-select').value;
+
+  try {
+    const response = await fetch('https://us-central1-proyecto-3-soa.cloudfunctions.net/get-all-bookings-function');
+    const data = await response.json();
+    const bookings = data.bookings;
+
+    const daysInMonth = new Date(yearSelect, monthNames.indexOf(monthSelect) + 1, 0).getDate();
+    const calendar = document.getElementById('calendar');
+    calendar.innerHTML = ''; 
+
+    for (let day = 1; day <= daysInMonth; day++) {
+      const dayDiv = document.createElement('div');
+      dayDiv.className = 'day';
+      dayDiv.innerHTML = `<h3>${day}</h3>`;
+      dayDiv.onclick = () => showBookings(day, monthSelect, yearSelect, bookings); 
+      calendar.appendChild(dayDiv);
+    }
+
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Error al cargar las reservas: ' + error.message);
+  }
 }
 
-function cerrarSesion() {
-  localStorage.removeItem("username");
-  window.location.href = "/frontend/";
-}
 
-// Función que se ejecuta cuando la ventana se carga
-window.onload = function () {
-  displayUserName();
-};
+    function loadHours(day, month, year, bookings) {
+      const hourContainer = document.getElementById('hour-container');
+      const hoursDiv = document.getElementById('hours');
+      hoursDiv.innerHTML = ''; // Clear previous hours
+
+      const dayBookings = bookings.filter(booking => 
+        booking.dia === day &&
+        booking.mes === month &&
+        booking.anio === parseInt(year)
+      );
+
+      dayBookings.forEach(booking => {
+        const hourDiv = document.createElement('div');
+        hourDiv.className = `hour ${booking.estado === 'Disponible' ? 'available' : 'booked'}`;
+        hourDiv.innerHTML = `<span>${booking.hora}</span><span>${booking.estado}</span>`;
+        hoursDiv.appendChild(hourDiv);
+      });
+
+      hourContainer.style.display = 'block';
+    }
+
+    // Agregar evento de envío de formulario
+    document.getElementById('booking-form').addEventListener('submit', async (e) => {
+      e.preventDefault();
+
+      const email = document.getElementById('email').value;
+      const user = document.getElementById('user').value;
+      const persons = document.getElementById('persons').value;
+      const date = new Date(document.getElementById('date').value);
+      const time = document.getElementById('time').value;
+
+      const bookingData = {
+        user: user,
+        email: email,
+        hora: time,
+        dia: date.getDate()+1,
+        mes: monthNames[date.getMonth()],
+        anio: date.getFullYear(),
+        numero_personas: parseInt(persons),
+        estado: "Reservado"
+      };
+
+      try {
+        const response = await sendRequest('https://us-central1-proyecto-3-soa.cloudfunctions.net/add-booking-spaces-function', bookingData);
+        alert('Reserva agregada exitosamente');
+        document.getElementById('email').value = "";
+        document.getElementById('user').value = "";
+        document.getElementById('persons').value = "";
+        document.getElementById('date').value = "";
+        document.getElementById('time').value = "";
+
+        loadCalendar(); // Refresh the calendar
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error al agregar la reserva: ' + error.message);
+      }
+      
+    });
+
+    function showBookings(day, month, year, bookings) {
+      const bookingDetails = document.getElementById('booking-details');
+      const detailsDiv = document.getElementById('details');
+      detailsDiv.innerHTML = ''; // Limpiar detalles anteriores
+
+      // Obtener el nombre de usuario logueado
+      const loggedInUserName = getLoggedInUserName();
+
+      // Filtrar las reservas para el día seleccionado y el usuario logueado
+      const userBookings = bookings.filter(booking => 
+        booking.dia === day &&
+        booking.mes.toLowerCase() === month.toLowerCase() &&
+        booking.anio === parseInt(year) &&
+        booking.user === loggedInUserName
+      );
+
+      // Verificar si hay reservas para el día seleccionado
+      if (userBookings.length === 0) {
+        detailsDiv.innerHTML = '<p>No hay reservas para este día.</p>';
+      } else {
+        // Mostrar los detalles de las reservas para el día seleccionado y el usuario logueado
+        userBookings.forEach(booking => {
+          const bookingDiv = document.createElement('div');
+          bookingDiv.className = `hour ${booking.estado === 'Disponible' ? 'available' : 'booked'}`;
+          bookingDiv.innerHTML = `
+          <input type="text" id="hora" value="${booking.hora}" placeholder="Hora">
+          <input type="text" id="estado" value="${booking.estado}" placeholder="Estado">
+          <input type="text" id="usuario" value="${booking.user || 'N/A'}" placeholder="Usuario">
+          <input type="email" id="correo" value="${booking.email || 'N/A'}" placeholder="Correo electrónico">
+          <input type="number" id="numPersonas" value="${booking.numero_personas}" placeholder="Número de Personas">
+          <button onclick="editarReserva('${booking.id}')">Editar</button>
+          <button onclick="eliminarReserva('${booking.id}')">Eliminar</button>
+          `;
+          detailsDiv.appendChild(bookingDiv);
+        });
+      }
+
+      // Mostrar los detalles de la reserva
+      bookingDetails.style.display = 'block';
+    }
+
+
+    async function editarReserva(id) {
+      // Obtener los nuevos valores de los campos de entrada
+      const hora = document.getElementById('hora').value;
+      const estado = document.getElementById('estado').value;
+      const usuario = document.getElementById('usuario').value;
+      const correo = document.getElementById('correo').value;
+      const numPersonas = document.getElementById('numPersonas').value;
+
+      // Crear el objeto con los datos de la reserva actualizados
+      const bookingData = {
+        hora: hora,
+        estado: estado,
+        user: usuario,
+        email: correo,
+        numero_personas: parseInt(numPersonas)
+      };
+
+      try {
+        
+        //const response = await sendRequest(`https://us-central1-proyecto-3-soa.cloudfunctions.net/backend/put-horario/${id}`, {
+        
+        const response = await sendRequest(`https://us-central1-proyecto-3-soa.cloudfunctions.net/update-booking-function/${id}`, {
+          method: 'PUT',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify(bookingData)
+        });
+        alert('Reserva actualizada exitosamente');
+        loadCalendar(); // Recargar el calendario después de actualizar la reserva
+      } catch (error) {
+        console.error('Error:', error);
+        alert('Error al actualizar la reserva: ' + error.message);
+      }
+    }
+
+async function eliminarReserva(id) {
+  try {
+    //const response = await sendRequest(`https://us-central1-proyecto-3-soa.cloudfunctions.net/backend/delete-horario/${id}`, {
+    
+    const response = await sendRequest(`https://us-central1-proyecto-3-soa.cloudfunctions.net/delete-booking-function/${id}`, {
+      method: 'DELETE'
+    });
+    alert('Reserva eliminada exitosamente');
+    loadCalendar(); // Recargar el calendario después de eliminar la reserva
+  } catch (error) {
+    console.error('Error:', error);
+    alert('Error al eliminar la reserva: ' + error.message);
+  }
+}
 
 
   </script>
 </body>
 </html>
-

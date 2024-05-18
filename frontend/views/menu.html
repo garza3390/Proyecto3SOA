@@ -68,8 +68,8 @@
     <h1>Menú del Restaurante</h1>
   
     <div id="menu">
-      <h2>Entradas</h2>
-      <ul id="entradas">
+      <h2>Bebidas</h2>
+      <ul id="bebidas">
       </ul>
     
       <h2>Platos Principales</h2>
@@ -115,12 +115,12 @@
     }
 
     // URL de la API
-    var apiUrl = "https://us-central1-frontend-cloud-function.cloudfunctions.net/function-1";
+    var apiUrl = "https://us-central1-proyecto-3-soa.cloudfunctions.net/backend/menu";
 
     // Llamar a la función para obtener los datos de la API y generar las listas de platos
     obtenerDatosAPI(apiUrl, function(data) {
       generarListaPlatos(data.desserts, "postres");
-      generarListaPlatos(data.drinks, "entradas");
+      generarListaPlatos(data.drinks, "bebidas");
       generarListaPlatos(data.maindishes, "platos_principales");
     });
   </script>
